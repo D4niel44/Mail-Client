@@ -176,12 +176,3 @@ function archiveHandler(id) {
         })
         .catch((error) => console.log(error));
 }
-
-const archiveRequest = async(id, archive) => {
-    fetch(`emails/${id}`, {
-        method: "PUT",
-        body: JSON.stringify({
-            archived: archive,
-        }),
-    });
-};
