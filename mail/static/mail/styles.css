@@ -3,5 +3,9 @@ textarea {
 }
 
 .alert-danger {
-  display: none;
+    display: none;
+}
+
+p {
+    white-space: pre-line;
 }

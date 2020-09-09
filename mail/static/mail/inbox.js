@@ -46,13 +46,19 @@ document.addEventListener("DOMContentLoaded", function() {
     load_mailbox("inbox");
 });
 
-function compose_email() {
+function compose_email(
+    initialData = {
+        recipients: "",
+        subject: "",
+        body: "",
+    }
+) {
     moveToCompose();
 
-    // Clear out composition fields
-    document.querySelector("#compose-recipients").value = "";
-    document.querySelector("#compose-subject").value = "";
-    document.querySelector("#compose-body").value = "";
+    // Update initial values of the form.
+    document.querySelector("#compose-recipients").value = initialData.recipients;
+    document.querySelector("#compose-subject").value = initialData.subject;
+    document.querySelector("#compose-body").value = initialData.body;
 }
 
 function send_email() {
@@ -106,10 +112,11 @@ function load_mailbox(mailbox) {
   }</h3>`;
 
     const handleEmail = (email) => {
+        console.log(email);
         const emailElement = mailboxView.appendChild(document.createElement("div"));
         emailElement.className = "row border mb-1 mt-0 mx-1 py-2";
         emailElement.id = email.id;
-        emailElement.onclick = () => view_email(email.id);
+        emailElement.onclick = () => view_email(email.id, mailbox === SENT);
         if (email.read) emailElement.style.backgroundColor = "lightgray";
 
         const createColumn = (content, width) => {
@@ -120,7 +127,7 @@ function load_mailbox(mailbox) {
         };
 
         createColumn(`<b>From: </b> ${email.sender}`, 3);
-        createColumn(`<b>Subject: </b> ${email.body}`, 6);
+        createColumn(`<b>Subject: </b> ${email.subject}`, 6);
         createColumn(`<b>Date: </b> ${email.timestamp}`, "auto").classList.add(
             "ml-auto"
         );
@@ -132,13 +139,14 @@ function load_mailbox(mailbox) {
         .catch((error) => console.log(error));
 }
 
-function view_email(id) {
+function view_email(id, isSentEmail) {
     moveToEmail();
 
     const senderView = document.getElementById("email-sender");
     const recipientsView = document.getElementById("email-recipients");
     const subjectView = document.querySelectorAll(".email-subject");
     const bodyView = document.getElementById("email-body");
+    const replyButton = document.getElementById("email-reply-button");
     const archiveButton = document.getElementById("email-archive-button");
 
     fetch(`emails/${id}`)
@@ -148,8 +156,15 @@ function view_email(id) {
             recipientsView.innerHTML = result.recipients;
             subjectView.forEach((subject) => (subject.innerHTML = result.subject));
             bodyView.innerHTML = result.body;
-            archiveButton.onclick = () => archiveHandler(result.id);
-            archiveButton.innerHTML = result.archived ? "Unarchive" : "Archive";
+            replyButton.onclick = () => replyHandler(result);
+
+            if (isSentEmail) {
+                archiveButton.style.display = "none";
+            } else {
+                archiveButton.style.display = "block";
+                archiveButton.onclick = () => archiveHandler(result.id);
+                archiveButton.textContent = result.archived ? "Unarchive" : "Archive";
+            }
         })
         .catch((error) => console.log(error));
 
@@ -171,8 +186,20 @@ function archiveHandler(id) {
                 body: JSON.stringify({
                     archived: !isArchived,
                 }),
-            });
-            document.getElementById('email-archive-button').textContent = isArchived ? "Archive" : "Unarchive";
+            }).then(() => load_mailbox(INBOX));
         })
         .catch((error) => console.log(error));
+}
+
+function replyHandler(email) {
+    let subject = email.subject;
+    if (!/^Re: /.test(subject)) {
+        subject = "Re: " + subject;
+    }
+    const body = `\n On ${email.timestamp} ${email.sender} wrote:\n ${email.body}`;
+    compose_email({
+        recipients: email.sender,
+        subject: subject,
+        body: body,
+    });
 }
