@@ -1,6 +1,8 @@
 const SENT = "sent";
 const INBOX = "inbox";
 const ARCHIVE = "archive";
+const COMPOSE = "compose";
+const EMAIL = "email";
 
 function isValidMailbox(mailbox) {
     return mailbox === INBOX || mailbox === SENT || mailbox === ARCHIVE;
@@ -26,6 +28,14 @@ const moveToCompose = () => {
     getMailboxView().style.display = "none";
     getComposeView().style.display = "block";
     getEmailView().style.display = "none";
+};
+
+window.onpopstate = (event) => {
+    const state = event.state;
+    const section = state.section;
+    if (section === COMPOSE) compose_email();
+    else if (section === EMAIL) view_email(state.id);
+    else load_mailbox(section);
 };
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -55,6 +65,7 @@ function compose_email(
         body: "",
     }
 ) {
+    history.pushState({ section: COMPOSE }, "", "");
     moveToCompose();
 
     // Update initial values of the form.
@@ -102,6 +113,7 @@ function load_mailbox(mailbox) {
         return;
     }
 
+    history.pushState({ section: mailbox }, "", "");
     moveToMailbox();
 
     const mailboxView = getMailboxView();
@@ -140,6 +152,7 @@ function load_mailbox(mailbox) {
 }
 
 function view_email(id, isSentEmail) {
+    history.pushState({ section: EMAIL, id: id }, "", "");
     moveToEmail();
 
     const senderView = document.getElementById("email-sender");
