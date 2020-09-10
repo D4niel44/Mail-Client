@@ -126,7 +126,7 @@ function load_mailbox(mailbox) {
     const handleEmail = (email) => {
         console.log(email);
         const emailElement = mailboxView.appendChild(document.createElement("div"));
-        emailElement.className = "row border mb-1 mt-0 mx-1 py-2";
+        emailElement.className = "row border mb-1 mt-0 mx-1 py-2 email-row";
         emailElement.id = email.id;
         emailElement.onclick = () => view_email(email.id, mailbox === SENT);
         if (email.read) emailElement.style.backgroundColor = "lightgray";
