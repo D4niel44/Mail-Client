@@ -39,7 +39,9 @@ document.addEventListener("DOMContentLoaded", function() {
     document
         .querySelector("#archived")
         .addEventListener("click", () => load_mailbox(ARCHIVE));
-    document.querySelector("#compose").addEventListener("click", compose_email);
+    document
+        .querySelector("#compose")
+        .addEventListener("click", () => compose_email());
     document.querySelector("#compose-form").onsubmit = send_email;
 
     // By default, load the inbox
@@ -62,8 +64,6 @@ function compose_email(
 }
 
 function send_email() {
-    console.log("sending email");
-
     const recipients = document.getElementById("compose-recipients").value;
     const subject = document.getElementById("compose-subject").value;
     const body = document.getElementById("compose-body").value;
